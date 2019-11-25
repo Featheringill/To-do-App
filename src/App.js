@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./index.css";
 import todosList from "./todos.json";
+import { Route } from "react-router-dom";
 
 class App extends Component {
   state = {
@@ -8,46 +9,46 @@ class App extends Component {
     value: ""
   };
 
+  handleDelete = todoIdToDelete => {
+    const newTodoList = this.state.todos.filter(
+      todo => todo.id !== todoIdToDelete
+    );
+    this.setState({ todos: newTodoList });
+  };
 
-handleDelete = todoIdToDelete => {
-  const newTodoList = this.state.todos.filter(
-    todo => todo.id !== todoIdToDelete
-  );
-  this.setState({ todos: newTodoList });
-};
-
-handleCreate = event => {
-  if (event.key === "Enter") {
-    const newTodoList = this.state.todos.slice()
-    newTodoList.push({
-      "userId": 1,
-      "id": Math.floor(Math.random() * 10000000000),
-      "title": this.state.value,
-      "completed": false
-    })
-    this.setState({ todos: newTodoList, value: "" })
-  }
-} 
- 
-handleChange = event => {
-  this.setState({ value: event.target.value })
-}
-
-handleToggle = todoIdToToggle => {
-  const newTodoList = this.state.todos.map(todo => {
-    if (todo.id === todoIdToToggle) {
-      const newTodo = { ...todo };
-      newTodo.completed = !newTodo.completed;
-      return newTodo;
+  handleCreate = event => {
+    if (event.key === "Enter") {
+      const newTodoList = this.state.todos.slice();
+      newTodoList.push({
+        userId: 1,
+        id: Math.floor(Math.random() * 10000000000),
+        title: this.state.value,
+        completed: false
+      });
+      this.setState({ todos: newTodoList, value: "" });
     }
-    return todo
-  });
-  this.setState({ todos: newTodoList });
-}
+  };
 
-// handleClearCompleted = event => {
+  handleChange = event => {
+    this.setState({ value: event.target.value });
+  };
 
-// }
+  handleToggle = todoIdToToggle => {
+    const newTodoList = this.state.todos.map(todo => {
+      if (todo.id === todoIdToToggle) {
+        const newTodo = { ...todo };
+        newTodo.completed = !newTodo.completed;
+        return newTodo;
+      }
+      return todo;
+    });
+    this.setState({ todos: newTodoList });
+  };
+
+  handleClearCompleted = event => {
+    const newTodos = this.state.todos.filter(todo => todo.completed !== true);
+    this.setState({ todos: newTodos });
+  };
 
   render() {
     return (
@@ -63,18 +64,49 @@ handleToggle = todoIdToToggle => {
             value={this.state.value}
           />
         </header>
-        <TodoList 
-          handleToggle={this.handleToggle} 
-          handleDelete={this.handleDelete} 
-          todos={this.state.todos}
-          />
+        <Route
+          exact
+          path="/"
+          render={() => (
+            <TodoList
+              handleToggle={this.handleToggle}
+              handleDelete={this.handleDelete}
+              todos={this.state.todos}
+            />
+          )}
+        />
+
+        <Route
+          path="/active"
+          render={() => (
+            <TodoList
+              handleToggle={this.handleToggle}
+              handleDelete={this.handleDelete}
+              todos={this.state.todos.filter(todo => todo.completed === false)}
+            />
+          )}
+        />
+
+        <Route
+          path="/completed"
+          render={() => (
+            <TodoList
+              handleToggle={this.handleToggle}
+              handleDelete={this.handleDelete}
+              todos={this.state.todos.filter(todo => todo.completed === true)}
+            />
+          )}
+        />
+
         <footer className="footer">
           <span className="todo-count">
             <strong>0</strong> item(s) left
           </span>
-          <button 
-            className="clear-completed">Clear completed
-            {/* onClick={this.props.handleClearCompleted} */}
+          <button
+            className="clear-completed"
+            onClick={this.handleClearCompleted}
+          >
+            Clear completed
           </button>
         </footer>
       </section>
@@ -94,8 +126,7 @@ class TodoItem extends Component {
             onChange={this.props.handleToggle}
           />
           <label>{this.props.title}</label>
-          <button className="destroy"
-          onClick={this.props.handleDelete} />
+          <button className="destroy" onClick={this.props.handleDelete} />
         </div>
       </li>
     );
@@ -108,12 +139,13 @@ class TodoList extends Component {
       <section className="main">
         <ul className="todo-list">
           {this.props.todos.map(todo => (
-            <TodoItem 
-            handleDelete={event => this.props.handleDelete(todo.id)}
-            handleToggle={event => this.props.handleToggle(todo.id)}
-            title={todo.title} 
-            completed={todo.completed}
-            key={todo.id} />
+            <TodoItem
+              handleDelete={event => this.props.handleDelete(todo.id)}
+              handleToggle={event => this.props.handleToggle(todo.id)}
+              title={todo.title}
+              completed={todo.completed}
+              key={todo.id}
+            />
           ))}
         </ul>
       </section>
