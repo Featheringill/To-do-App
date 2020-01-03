@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "./index.css";
 import todosList from "./todos.json";
 import { Route, NavLink } from "react-router-dom";
-import TodoItem from "./TodoItem";
 import TodoList from "./TodoList";
 
 class App extends Component {
